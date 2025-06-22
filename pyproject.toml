@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'spline-resize'
-version = '0.0.1'
+version = '0.1.0'
 description = 'B-spline interpolation in PyTorch'
 authors = ['codingfisch <l_fisc17@wwu.de>']
 license = 'MIT'
