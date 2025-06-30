@@ -18,15 +18,15 @@ def grid_sample(im, grid, align_corners=False, prefilter=True, mask_value=None):
     assert im.ndim == 5 and grid.ndim == 5 and len(im) == len(grid), 'Image and grid must have same length and be 5D'
     sample_im = apply_filter(im, mask_value) if prefilter else im.clone()
     weights, idxs = fit_splines(get_indizes(grid, im.shape[-3:], align_corners), im.shape[-3:])
-    sample_im = sample_im.reshape(*im.shape[:2], -1)
-    out_im = torch.zeros_like(im[:, :, :1, 0, 0]).repeat(1, 1, grid.shape[1] * grid.shape[2] * grid.shape[3])
+    out_im = 0 * weights[0][0][None].repeat(im.shape[1], 1, 1)
+    sample_im = sample_im.permute(1, 0, 2, 3, 4).reshape(im.shape[1], im.shape[0], -1)
     for i in range(3):
         for j in range(3):
             for k in range(3):
-                node_im = sample_im.gather(-1, (idxs[0][i] + idxs[1][j] + idxs[2][k])[:, None].long())
-                node_im *= (weights[0][i] * weights[1][j] * weights[2][k])[:, None]
+                node_im = sample_im.gather(-1, (idxs[0][i] + idxs[1][j] + idxs[2][k])[None].repeat(im.shape[1], 1 , 1).long())
+                node_im *= (weights[0][i] * weights[1][j] * weights[2][k])[None]
                 out_im += node_im
-    return out_im.view(*out_im.shape[:2], *grid.shape[-4:-1])
+    return out_im.view(*out_im.shape[:2], *grid.shape[-4:-1]).permute(1, 0, 2, 3, 4)
 
 
 def fit_splines(idx, shape):
